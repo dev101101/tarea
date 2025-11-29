@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoSQL & Big Data - Presentación</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const { useState, useEffect } = React;
+
+        // Simple SVG Icons
+        const Icons = {
+            Database: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="${props.className || ''}"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5"></path><ellipse cx="12" cy="19" rx="9" ry="3"></ellipse></svg>`,
+            Server: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8"></rect><rect x="2" y="14" width="20" height="8"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>`,
+            TrendingUp: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`,
+            ChevronLeft: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
+            ChevronRight: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+            Terminal: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`,
+            Cpu: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`,
+            Share2: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`,
+            AlertTriangle: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+            ShoppingCart: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>`,
+            Sprout: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 20h10M10 20v-8.3c0-1 .1-1.9.3-2.7A5.41 5.41 0 0 1 15.9 3c1.6 0 3.1.7 4.1 1.8"></path><path d="M7 20c0-1 .1-1.9.3-2.7"></path><path d="M7 9c0-1 .1-1.9.3-2.7A5.41 5.41 0 0 1 12.9 1c1.6 0 3.1.7 4.1 1.8"></path></svg>`,
+            Activity: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`,
+            ShieldCheck: (props) => `<svg xmlns="http://www.w3.org/2000/svg" width="${props.size || 24}" height="${props.size || 24}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 15 10"></polyline></svg>`
+        };
+
+        const SvgIcon = ({ icon, size = 24, className = "" }) => {
+            const svg = Icons[icon]({ size, className });
+            return React.createElement('span', { 
+                dangerouslySetInnerHTML: { __html: svg },
+                style: { display: 'inline-block' }
+            });
+        };
+
+        const Card = ({ title, content, icon, color = "blue" }) => (
+            React.createElement('div', { className: `bg-white/10 backdrop-blur-md border-l-4 border-${color}-500 p-6 rounded-r-xl shadow-lg hover:translate-y-1 transition-all duration-300` },
+                React.createElement('div', { className: 'flex items-center mb-3' },
+                    React.createElement('div', { className: `p-2 rounded-lg bg-${color}-500/20 mr-3` },
+                        React.createElement(SvgIcon, { icon, size: 24, className: `text-${color}-400` })
+                    ),
+                    React.createElement('h3', { className: 'text-xl font-bold text-white' }, title)
+                ),
+                React.createElement('p', { className: 'text-gray-300 text-sm leading-relaxed' }, content)
+            )
+        );
+
+        const SectionTitle = ({ children }) => 
+            React.createElement('h2', { className: 'text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tight' }, children);
+
+        const SlideCover = () => 
+            React.createElement('div', { className: 'flex flex-col items-center justify-center h-full text-center space-y-8 animate-fadeIn' },
+                React.createElement('div', { className: 'relative' },
+                    React.createElement('div', { className: 'absolute -inset-1 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-full blur opacity-75 animate-pulse' }),
+                    React.createElement('div', { className: 'relative bg-gray-900 rounded-full p-8' },
+                        React.createElement(SvgIcon, { icon: 'Database', size: 80, className: 'text-blue-400' })
+                    )
+                ),
+                React.createElement('div', null,
+                    React.createElement('h1', { className: 'text-5xl md:text-7xl font-bold text-white mb-4' },
+                        'NoSQL & ',
+                        React.createElement('span', { className: 'text-emerald-400' }, 'Big Data')
+                    ),
+                    React.createElement('p', { className: 'text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto' },
+                        'La evolución de la gestión de información y su impacto en las organizaciones modernas.'
+                    )
+                ),
+                React.createElement('div', { className: 'mt-12 flex gap-4 text-sm font-mono text-gray-500' },
+                    React.createElement('span', { className: 'px-4 py-2 border border-gray-700 rounded-full' }, 'Gestión de la Información'),
+                    React.createElement('span', { className: 'px-4 py-2 border border-gray-700 rounded-full' }, 'Tendencias Tecnológicas')
+                )
+            );
+
+        const SlideContext = () => 
+            React.createElement('div', { className: 'h-full flex flex-col justify-center animate-fadeIn px-8' },
+                React.createElement(SectionTitle, null, 'El Contexto Actual'),
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center' },
+                    React.createElement('div', { className: 'space-y-6' },
+                        React.createElement('p', { className: 'text-xl text-gray-300 leading-relaxed' },
+                            'Vivimos una ',
+                            React.createElement('strong', { className: 'text-white' }, 'transformación radical'),
+                            ' impulsada por la generación masiva de datos. Las bases SQL tradicionales se han visto superadas.'
+                        ),
+                        React.createElement('div', { className: 'bg-blue-900/20 p-6 rounded-xl border border-blue-500/30' },
+                            React.createElement('h3', { className: 'text-blue-300 font-bold mb-2 flex items-center gap-2' },
+                                React.createElement(SvgIcon, { icon: 'TrendingUp', size: 20 }),
+                                'El Desafío'
+                            ),
+                            React.createElement('p', { className: 'text-gray-400 text-sm' },
+                                'Procesar volúmenes masivos (Big Data), a gran velocidad y con variedad de formatos no estructurados.'
+                            )
+                        )
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-1 gap-4' },
+                        React.createElement(Card, {
+                            title: 'SQL vs NoSQL',
+                            content: 'Cambio de paradigma: De estructuras rígidas y verticales a modelos flexibles y horizontales.',
+                            icon: 'Server',
+                            color: 'indigo'
+                        }),
+                        React.createElement(Card, {
+                            title: 'Sinergia Tecnológica',
+                            content: 'NoSQL provee la escalabilidad. Blockchain aporta integridad y seguridad inmutable.',
+                            icon: 'ShieldCheck',
+                            color: 'emerald'
+                        })
+                    )
+                )
+            );
+
+        const SlideFundamentals = () => {
+            const [activeType, setActiveType] = useState(0);
+            const types = [
+                { title: 'Documentales', ex: 'MongoDB', desc: 'Almacenan datos en JSON/BSON. Estructura flexible ideal para contenido web.', icon: 'Terminal' },
+                { title: 'Clave-Valor', ex: 'Redis', desc: 'Simples y ultra veloces. Ideales para sesiones y caché.', icon: 'Activity' },
+                { title: 'Columnares', ex: 'Cassandra', desc: 'Optimizadas para consultas masivas sobre grandes históricos.', icon: 'Database' },
+                { title: 'Grafos', ex: 'Neo4j', desc: 'Para redes sociales y motores de recomendación. Relaciones complejas.', icon: 'Share2' }
+            ];
+
+            return React.createElement('div', { className: 'h-full flex flex-col justify-center animate-fadeIn px-4 md:px-12' },
+                React.createElement(SectionTitle, null, 'Fundamentos Técnicos'),
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-12 gap-8' },
+                    React.createElement('div', { className: 'md:col-span-5 space-y-4' },
+                        React.createElement('p', { className: 'text-lg text-gray-300 mb-6' },
+                            React.createElement('span', { className: 'text-blue-400 font-bold' }, 'NoSQL (Not Only SQL)'),
+                            ' permite escalabilidad horizontal y esquemas flexibles.'
+                        ),
+                        React.createElement('div', { className: 'flex flex-col gap-2' },
+                            types.map((t, idx) => 
+                                React.createElement('button', {
+                                    key: idx,
+                                    onClick: () => setActiveType(idx),
+                                    className: `p-4 text-left rounded-lg transition-all flex items-center justify-between ${activeType === idx ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`
+                                },
+                                    React.createElement('span', { className: 'font-bold' }, t.title),
+                                    activeType === idx && React.createElement(SvgIcon, { icon: 'ChevronRight', size: 16 })
+                                )
+                            )
+                        )
+                    ),
+                    React.createElement('div', { className: 'md:col-span-7 flex items-center justify-center' },
+                        React.createElement('div', { className: 'bg-gray-800/50 p-8 rounded-2xl border border-gray-700 w-full h-full flex flex-col justify-center items-center text-center transition-all duration-500' },
+                            React.createElement(SvgIcon, { icon: types[activeType].icon, size: 64, className: 'text-blue-400 mb-6 animate-bounce' }),
+                            React.createElement('h3', { className: 'text-3xl font-bold text-white mb-2' }, types[activeType].title),
+                            React.createElement('span', { className: 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-mono mb-4' },
+                                'Ej: ',
+                                types[activeType].ex
+                            ),
+                            React.createElement('p', { className: 'text-xl text-gray-300' }, types[activeType].desc)
+                        )
+                    )
+                )
+            );
+        };
+
+        const SlideArchitecture = () =>
+            React.createElement('div', { className: 'h-full flex flex-col justify-center animate-fadeIn px-8' },
+                React.createElement(SectionTitle, null, 'Arquitectura & Componentes'),
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6 mt-8' },
+                    React.createElement('div', { className: 'bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-xl border-t-4 border-orange-500 hover:mt-[-10px] transition-all' },
+                        React.createElement(SvgIcon, { icon: 'Cpu', size: 40, className: 'text-orange-400 mb-4' }),
+                        React.createElement('h3', { className: 'text-xl font-bold text-white mb-2' }, 'Hardware Commodity'),
+                        React.createElement('p', { className: 'text-sm text-gray-400' }, 'Uso de clusters de servidores estándar de bajo costo en lugar de mainframes costosos. Redundancia nativa.')
+                    ),
+                    React.createElement('div', { className: 'bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-xl border-t-4 border-purple-500 hover:mt-[-10px] transition-all' },
+                        React.createElement(SvgIcon, { icon: 'Share2', size: 40, className: 'text-purple-400 mb-4' }),
+                        React.createElement('h3', { className: 'text-xl font-bold text-white mb-2' }, 'Sharding & Replication'),
+                        React.createElement('p', { className: 'text-sm text-gray-400' }, 'Distribución automática de datos (fragmentación) y replicación para alta disponibilidad (Teorema CAP).')
+                    ),
+                    React.createElement('div', { className: 'bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-xl border-t-4 border-yellow-500 hover:mt-[-10px] transition-all' },
+                        React.createElement(SvgIcon, { icon: 'Terminal', size: 40, className: 'text-yellow-400 mb-4' }),
+                        React.createElement('h3', { className: 'text-xl font-bold text-white mb-2' }, 'Formatos Ágiles'),
+                        React.createElement('p', { className: 'text-sm text-gray-400' }, 'Uso de JSON (JavaScript Object Notation) o BSON. Permite integración fluida con apps Web y Móviles modernas.')
+                    )
+                )
+            );
+
+        const SlideCases = () => {
+            const [activeTab, setActiveTab] = useState('bank');
+            const cases = {
+                bank: { title: 'Banca y Finanzas', icon: 'TrendingUp', color: 'blue', items: [
+                    { main: 'Yape (BCP)', desc: 'Manejo de millones de transacciones en tiempo real.' },
+                    { main: 'Fraude', desc: 'Detección de patrones sospechosos en milisegundos con IA.' }
+                ]},
+                agro: { title: 'Agroindustria', icon: 'Sprout', color: 'green', items: [
+                    { main: 'Camposol / Danper', desc: 'Sensores IoT miden humedad y temperatura.' },
+                    { main: 'Optimización', desc: 'Automatización de riego en cultivos críticos (arándanos, uvas).' }
+                ]},
+                logistics: { title: 'Logística', icon: 'ShoppingCart', color: 'orange', items: [
+                    { main: 'Falabella / Alicorp', desc: 'Algoritmos de "última milla" para rutas eficientes.' },
+                    { main: 'Tráfico', desc: 'Reducción de tiempos de entrega en el caos urbano.' }
+                ]}
+            };
+
+            return React.createElement('div', { className: 'h-full flex flex-col justify-center animate-fadeIn px-4 md:px-12' },
+                React.createElement(SectionTitle, null, 'Aplicaciones en Perú'),
+                React.createElement('div', { className: 'flex justify-center gap-4 mb-8 flex-wrap' },
+                    Object.entries(cases).map(([key, data]) =>
+                        React.createElement('button', {
+                            key,
+                            onClick: () => setActiveTab(key),
+                            className: `px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 ${activeTab === key ? `bg-${data.color}-600 text-white shadow-lg` : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`
+                        },
+                            React.createElement(SvgIcon, { icon: data.icon, size: 18 }),
+                            data.title
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'bg-gray-800/40 p-8 rounded-2xl border border-gray-700 relative overflow-hidden' },
+                    React.createElement('h3', { className: `text-3xl font-bold text-${cases[activeTab].color}-400 mb-6 flex items-center gap-3` },
+                        React.createElement(SvgIcon, { icon: cases[activeTab].icon, size: 32 }),
+                        cases[activeTab].title
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                        cases[activeTab].items.map((item, i) =>
+                            React.createElement('div', { key: i, className: 'bg-gray-900/80 p-5 rounded-lg border-l-4 border-gray-600 hover:border-white transition-colors' },
+                                React.createElement('h4', { className: 'text-xl font-bold text-white mb-2' }, item.main),
+                                React.createElement('p', { className: 'text-gray-400' }, item.desc)
+                            )
+                        )
+                    )
+                )
+            );
+        };
+
+        const SlideAnalysis = () =>
+            React.createElement('div', { className: 'h-full flex flex-col justify-center animate-fadeIn px-8' },
+                React.createElement(SectionTitle, null, 'Análisis Crítico'),
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-8' },
+                    React.createElement('div', { className: 'bg-emerald-900/20 p-8 rounded-2xl border border-emerald-500/30 flex flex-col' },
+                        React.createElement('h3', { className: 'text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-2' },
+                            React.createElement(SvgIcon, { icon: 'TrendingUp', size: 24 }),
+                            ' Ventajas'
+                        ),
+                        React.createElement('ul', { className: 'space-y-4 text-gray-300 flex-1' },
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-emerald-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Escalabilidad Realista:'), ' Crece con hardware barato, vital para Startups y Big Data.')
+                            ),
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-emerald-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Flexibilidad:'), ' Almacena datos heterogéneos (logs, imágenes, texto) sin romper esquemas.')
+                            ),
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-emerald-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Alto Rendimiento:'), ' Latencias mínimas para usuarios exigentes (Banca, Retail).')
+                            )
+                        )
+                    ),
+                    React.createElement('div', { className: 'bg-red-900/20 p-8 rounded-2xl border border-red-500/30 flex flex-col' },
+                        React.createElement('h3', { className: 'text-2xl font-bold text-red-400 mb-6 flex items-center gap-2' },
+                            React.createElement(SvgIcon, { icon: 'AlertTriangle', size: 24 }),
+                            ' Desafíos'
+                        ),
+                        React.createElement('ul', { className: 'space-y-4 text-gray-300 flex-1' },
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-red-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Teorema CAP:'), ' Difícil mantener consistencia estricta en todo momento (Consistency vs Availability).')
+                            ),
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-red-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Privacidad & Ética:'), ' Riesgos en el manejo de datos personales (LPDP) y reconocimiento facial.')
+                            ),
+                            React.createElement('li', { className: 'flex items-start gap-3' },
+                                React.createElement('div', { className: 'w-2 h-2 mt-2 bg-red-500 rounded-full' }),
+                                React.createElement('span', null, React.createElement('strong', null, 'Brecha de Talento:'), ' Escasez de especialistas en NoSQL y Blockchain en Perú.')
+                            )
+                        )
+                    )
+                )
+            );
+
+        const App = () => {
+            const [currentSlide, setCurrentSlide] = useState(0);
+            const slides = [SlideCover, SlideContext, SlideFundamentals, SlideArchitecture, SlideCases, SlideAnalysis];
+            const nextSlide = () => setCurrentSlide(prev => Math.min(prev + 1, slides.length - 1));
+            const prevSlide = () => setCurrentSlide(prev => Math.max(prev - 1, 0));
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                    if (e.key === 'ArrowLeft') prevSlide();
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [currentSlide]);
+
+            const CurrentSlideComponent = slides[currentSlide];
+
+            return React.createElement('div', { className: 'w-full h-screen bg-gray-900 text-white overflow-hidden font-sans' },
+                React.createElement('div', { className: 'absolute inset-0 z-0 opacity-20 pointer-events-none' },
+                    React.createElement('div', { className: 'absolute top-0 left-0 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob' }),
+                    React.createElement('div', { className: 'absolute top-0 right-0 w-96 h-96 bg-emerald-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000' }),
+                    React.createElement('div', { className: 'absolute -bottom-8 left-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000' })
+                ),
+                React.createElement('main', { className: 'relative z-10 w-full h-full flex flex-col' },
+                    React.createElement('header', { className: 'p-6 flex justify-between items-center text-gray-500 text-sm font-mono' },
+                        'EXP-2025 • GRUPO 3',
+                        React.createElement('div', { className: 'flex gap-1' },
+                            slides.map((_, i) =>
+                                React.createElement('div', {
+                                    key: i,
+                                    className: `h-1 w-8 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-blue-500 w-12' : 'bg-gray-700'}`
+                                })
+                            )
+                        ),
+                        `${currentSlide + 1} / ${slides.length}`
+                    ),
+                    React.createElement('div', { className: 'flex-1 overflow-y-auto overflow-x-hidden relative' },
+                        React.createElement('div', { className: 'max-w-6xl mx-auto h-full p-4 md:p-8' },
+                            React.createElement(CurrentSlideComponent)
+                        )
+                    ),
+                    React.createElement('footer', { className: 'p-6 flex justify-between items-center z-20' },
+                        React.createElement('button', {
+                            onClick: prevSlide,
+                            disabled: currentSlide === 0,
+                            className: 'p-3 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white'
+                        }, React.createElement(SvgIcon, { icon: 'ChevronLeft', size: 32 })),
+                        React.createElement('div', { className: 'text-gray-500 text-xs hidden md:block' }, 'Usa las flechas ← → para navegar'),
+                        React.createElement('button', {
+                            onClick: nextSlide,
+                            disabled: currentSlide === slides.length - 1,
+                            className: 'p-3 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white'
+                        }, React.createElement(SvgIcon, { icon: 'ChevronRight', size: 32 }))
+                    )
+                ),
+                React.createElement('style', null, `
+                    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                    .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+                    @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+                    .animate-blob { animation: blob 7s infinite; }
+                    .animation-delay-2000 { animation-delay: 2s; }
+                    .animation-delay-4000 { animation-delay: 4s; }
+                `)
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+</body>
+</html>
