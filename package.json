@@ -1,0 +1,20 @@
+{
+    "name": "tarea-presentacion",
+    "version": "1.0.0",
+    "description": "Presentación NoSQL & Big Data (archivo tarea.html)",
+    "main": "tarea.html",
+    "scripts": {
+        "start": "live-server --port=3000 --open=./tarea.html",
+        "serve": "live-server --port=3000 --open=./tarea.html"
+    },
+    "keywords": [
+        "nosql",
+        "bigdata",
+        "presentation"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "live-server": "^1.2.0"
+    }
+}

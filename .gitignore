@@ -1,0 +1,48 @@
+# Node modules y archivos temporales
+node_modules/
+npm-debug.log*
+package-lock.json
+.DS_Store
+.vscode/
+``` ````
+
+2) Excluir node_modules del watcher y del explorador en VSCode
+````json
+// filepath: c:\Users\diego\OneDrive\Desktop\diego\.vscode\settings.json
+{
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**[.git](http://_vscodecontentref_/0)**": true,
+        "**/.vscode/**": true
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.vscode": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/.git": true
+    }
+}
+``` ````
+
+3) (Opcional) Mover el proyecto fuera de OneDrive para evitar sincronización continua
+````powershell
+# run in PowerShell (ejecutar como usuario)
+Move-Item -Path "C:\Users\diego\OneDrive\Desktop\diego" -Destination "C:\Projects\diego"
+``` ````
+
+Después de aplicar:
+- Reinicia VSCode.
+- Si usas live-server, reinícialo (npm start).
+- Observa si las detecciones de cambios dejan de aparecer.
+
+Si el bucle persiste, pega la salida de la terminal o el registro del watcher y reviso siguiente paso.Después de aplicar:
+- Reinicia VSCode.
+- Si usas live-server, reinícialo (npm start).
+- Observa si las detecciones de cambios dejan de aparecer.
+
+Si el bucle persiste, pega la salida de la terminal o el registro del watcher y reviso siguiente paso.
+# Local Netlify folder
+.netlify
